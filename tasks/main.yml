@@ -1,0 +1,20 @@
+---
+- name: Check zabbix repository status
+  shell: yum-config-manager zabbix | grep -q 'enabled = True'
+  changed_when: False
+  ignore_errors: True
+  register: zabbix_status
+
+- name: Install zabbix repository
+  yum:
+    name: http://repo.zabbix.com/zabbix/2.2/rhel/7/x86_64/zabbix-release-2.2-1.el7.noarch.rpm
+    state: present
+  when:
+    - zabbix_status.rc != 0
+  when: not ansible_check_mode
+
+- name: Enabled zabbix repository
+  command: yum-config-manager --enable zabbix
+  when:
+    - zabbix_status.rc != 0
+  when: not ansible_check_mode
